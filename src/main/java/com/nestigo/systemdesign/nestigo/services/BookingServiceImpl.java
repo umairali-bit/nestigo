@@ -61,7 +61,7 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException("Room is not available");
         }
 
-        // reserving the room
+//      reserving the room
          for(InventoryEntity inventory : inventoryList) {
              inventory.setReservedCount(inventory.getReservedCount()+ bookingRequestDTO.getRoomsCount());
          }

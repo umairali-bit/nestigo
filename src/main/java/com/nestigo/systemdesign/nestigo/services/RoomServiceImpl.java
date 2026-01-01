@@ -4,13 +4,16 @@ import com.nestigo.systemdesign.nestigo.dtos.HotelDTO;
 import com.nestigo.systemdesign.nestigo.dtos.RoomDTO;
 import com.nestigo.systemdesign.nestigo.entities.HotelEntity;
 import com.nestigo.systemdesign.nestigo.entities.RoomEntity;
+import com.nestigo.systemdesign.nestigo.entities.UserEntity;
 import com.nestigo.systemdesign.nestigo.exceptions.ResourceNotFoundException;
+import com.nestigo.systemdesign.nestigo.exceptions.UnauthorizedException;
 import com.nestigo.systemdesign.nestigo.repositories.HotelRepository;
 import com.nestigo.systemdesign.nestigo.repositories.RoomRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,13 +41,16 @@ public class RoomServiceImpl implements RoomService{
                 .findById(hotelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel NOT found with ID: " + hotelId));
 
+    // you can only create a room in a hotel if you are the owner
+        UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(!user.equals(hotel.getOwner())){
+            throw new UnauthorizedException("This user is not the owner of this hotel" + hotelId);
+        }
+
         RoomEntity room = modelMapper.map(roomDTO, RoomEntity.class);
         room.setHotel(hotel);
         room = roomRepository.save(room);
 
-
-
-    //    TODO: add inventory - done
 
         if(hotel.isActive()) {
             inventoryService.initializeRoomForAYear(room);
@@ -71,7 +77,7 @@ public class RoomServiceImpl implements RoomService{
     public RoomDTO getRoomById(Long id) {
         log.info("Getting the room in hotel with ID: {}", id);
 
-        //  checking if the room exists or not
+    //  checking if the room exists or not
         RoomEntity room = roomRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel NOT found with ID: " + id));
@@ -85,7 +91,11 @@ public class RoomServiceImpl implements RoomService{
         RoomEntity room = roomRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel NOT found with ID: " + id));
-
+    //  you can only create a room in a hotel if you are the owner
+        UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(!user.equals(room.getHotel().getOwner())){
+            throw new UnauthorizedException("This user is not the owner of this room" + id);
+        }
         inventoryService.deleteAllInventories(room);
 
         roomRepository.deleteById(id);

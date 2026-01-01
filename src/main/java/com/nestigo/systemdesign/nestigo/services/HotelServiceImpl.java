@@ -35,7 +35,7 @@ public class HotelServiceImpl implements HotelService{
     public HotelDTO createHotel(HotelDTO hotelDTO) {
         log.info("Creating a new hotel with name: {}", hotelDTO.getName());
 
-        //converting dto to entity
+//    converting dto to entity
         HotelEntity hotelEntity = modelMapper.map(hotelDTO,HotelEntity.class);
         hotelEntity.setActive(false);
         //checking the owner
@@ -46,7 +46,7 @@ public class HotelServiceImpl implements HotelService{
         log.info("Created a new hotel with ID {}", hotelEntity.getId());
 
 
-        //converting entity back to DTO
+//      converting entity back to DTO
         return modelMapper.map(hotelEntity, HotelDTO.class);
     }
 
@@ -70,7 +70,7 @@ public class HotelServiceImpl implements HotelService{
     public HotelDTO updateHotel(Long id, HotelDTO hotelDTO) {
         log.info("Updating the hotel with ID: {}", id);
 
-        //getting hotel by id
+//        getting hotel by id
         HotelEntity existingHotel = hotelRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with ID" + id));
@@ -96,7 +96,7 @@ public class HotelServiceImpl implements HotelService{
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with ID" + id));
 
 
-        //checking the owner
+//        checking the owner
         UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(!user.equals(existingHotel.getOwner())){
             throw new UnauthorizedException("This user is not the owner of this hotel" + id);
@@ -122,7 +122,7 @@ public class HotelServiceImpl implements HotelService{
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with ID" + id));
 
-        //checking the owner
+//        checking the owner
         UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(!user.equals(existingHotel.getOwner())){
             throw new UnauthorizedException("This user is not the owner of this hotel" + id);
@@ -130,7 +130,7 @@ public class HotelServiceImpl implements HotelService{
 
         existingHotel.setActive(true);
 
-        //assuming this has to be done once
+//        assuming this has to be done once
 
         for(RoomEntity room: existingHotel.getRooms()){
             inventoryService.initializeRoomForAYear(room);
