@@ -7,6 +7,7 @@ import com.nestigo.systemdesign.nestigo.dtos.HotelDTO;
 import com.nestigo.systemdesign.nestigo.entities.*;
 import com.nestigo.systemdesign.nestigo.entities.enums.BookingStatus;
 import com.nestigo.systemdesign.nestigo.exceptions.ResourceNotFoundException;
+import com.nestigo.systemdesign.nestigo.exceptions.UnauthorizedException;
 import com.nestigo.systemdesign.nestigo.repositories.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -96,6 +98,15 @@ public class BookingServiceImpl implements BookingService {
         BookingEntity booking = bookingRepository.findById(bookingId).orElseThrow(() ->
                 new ResourceNotFoundException("Booking NOT found with id:"+ bookingId));
 
+        UserEntity user = getCurrentUser();
+
+        if(!user.equals(booking.getUser())) {
+            throw new UnauthorizedException("Booking does not belong to this user" +user.getId());
+
+        }
+
+
+
         if(hasBookingExpired(booking)){
             throw new IllegalStateException("Booking has expired");
 
@@ -107,7 +118,7 @@ public class BookingServiceImpl implements BookingService {
 
         for (GuestDTO guestDTO : guestDtoList) {
             GuestEntity guest = modelMapper.map(guestDTO, GuestEntity.class);
-            guest.setUser(getCurrentUser());
+            guest.setUser(user);
             guest = guestRepository.save(guest);
             booking.getGuests().add(guest);
 
@@ -123,9 +134,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     public UserEntity getCurrentUser() {
-        UserEntity user = new UserEntity();
-        user.setId(1L);
-        return user; //TODO: Remove Dummy User
+
+        return (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 
 
