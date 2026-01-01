@@ -3,7 +3,6 @@ package com.nestigo.systemdesign.nestigo.services;
 import com.nestigo.systemdesign.nestigo.entities.UserEntity;
 import com.nestigo.systemdesign.nestigo.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
