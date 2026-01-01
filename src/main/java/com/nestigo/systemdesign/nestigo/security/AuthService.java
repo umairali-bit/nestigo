@@ -1,6 +1,7 @@
 package com.nestigo.systemdesign.nestigo.security;
 
 
+import com.nestigo.systemdesign.nestigo.dtos.LoginDTO;
 import com.nestigo.systemdesign.nestigo.dtos.SignUpDTO;
 import com.nestigo.systemdesign.nestigo.dtos.UserDTO;
 import com.nestigo.systemdesign.nestigo.entities.UserEntity;
@@ -10,6 +11,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,6 +29,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     //take singupdata as input and return userdto
     @Transactional
@@ -40,5 +47,24 @@ public class AuthService {
 
         UserEntity saved = userRepository.save(user);
         return modelMapper.map(saved, UserDTO.class);
+    }
+
+    public String[] login(LoginDTO dto) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
+
+        UserEntity user = (UserEntity) authentication.getPrincipal();
+
+//        String accessToken = jwtService.generateAccessToken(user);
+//        String refreshToken = jwtService.generateRefreshToken(user);
+
+        String[] arr = new String[2];
+        arr[0] = jwtService.generateAccessToken(user);
+        arr[1] = jwtService.generateRefreshToken(user);
+
+        return arr;
+
+
+
     }
 }
