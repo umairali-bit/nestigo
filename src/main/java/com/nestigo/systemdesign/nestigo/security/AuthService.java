@@ -6,6 +6,7 @@ import com.nestigo.systemdesign.nestigo.dtos.SignUpDTO;
 import com.nestigo.systemdesign.nestigo.dtos.UserDTO;
 import com.nestigo.systemdesign.nestigo.entities.UserEntity;
 import com.nestigo.systemdesign.nestigo.entities.enums.RoleEnum;
+import com.nestigo.systemdesign.nestigo.exceptions.ResourceNotFoundException;
 import com.nestigo.systemdesign.nestigo.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -66,5 +67,16 @@ public class AuthService {
 
 
 
+    }
+
+
+    public String refreshToken (String refreshToken) {
+        Long id = jwtService.getUserId(refreshToken);
+
+        UserEntity user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(
+                "User with id " + id + " not found"
+        ));
+
+        return  jwtService.generateAccessToken(user);
     }
 }
