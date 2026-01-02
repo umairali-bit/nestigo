@@ -2,7 +2,6 @@ package com.nestigo.systemdesign.nestigo.security;
 
 import com.nestigo.systemdesign.nestigo.entities.UserEntity;
 import com.nestigo.systemdesign.nestigo.services.UserService;
-import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
@@ -32,7 +30,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Autowired
     @Qualifier("handlerExceptionResolver")
     private HandlerExceptionResolver handlerExceptionResolver;
-
 
 
     @Override
@@ -100,46 +97,29 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
 
  */
-try{
-        final String authorizationHeader = request.getHeader("Authorization");
-
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String token = authorizationHeader.substring(7).trim();
-
         try {
-            if (SecurityContextHolder.getContext().getAuthentication() == null) {
-
-                Long userId = jwtService.getUserId(token);
-
-                // DB lookup
-                UserEntity user = userService.getUserById(userId);
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                user,
-                                null,
-                                user.getAuthorities()
-                        );
-
-                authentication.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            final String requestTokenHeader = request.getHeader("Authorization");
+            if (requestTokenHeader == null || !requestTokenHeader.startsWith("Bearer")) {
+                filterChain.doFilter(request, response);
+                return;
             }
 
-        } catch (Exception e) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
-            return;
-        }
+            String token = requestTokenHeader.split("Bearer ")[1];
+            Long userId = jwtService.getUserId(token);
 
-        filterChain.doFilter(request, response);
-     } catch (JwtException ex) {
-            handlerExceptionResolver.resolveException(request,response,null,ex);
+            if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserEntity user = userService.getUserById(userId);
+                // check if the user should be allowed
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                authenticationToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
+                );
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            }
+            filterChain.doFilter(request, response);
+        } catch (JwtException ex) {
+            handlerExceptionResolver.resolveException(request, response, null, ex);
         }
     }
 }
