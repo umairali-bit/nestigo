@@ -20,8 +20,8 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_USER: umairali
-          POSTGRES_PASSWORD: 6102075b
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: nestigo
         ports:
           - 5432:5432
@@ -30,11 +30,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
-    env:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/nestigo
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
 
     steps:
       - name: Checkout code
@@ -63,6 +58,5 @@ jobs:
           echo "Postgres did not become ready in time"
           exit 1
 
-      - name: Build & Test
-        run: ./mvnw -q clean test
-
+      - name: Build & Test (test profile)
+        run: ./mvnw -q clean test -Dspring.profiles.active=test
