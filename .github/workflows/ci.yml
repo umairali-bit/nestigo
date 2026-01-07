@@ -8,12 +8,33 @@ on:
 
 jobs:
   build-test:
+    name: Build & Test (Java ${{ matrix.java }})
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: true
       matrix:
         java: [ "17", "21" ]
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: umairali
+          POSTGRES_PASSWORD: 6102075b
+          POSTGRES_DB: nestigo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/nestigo
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
 
     steps:
       - name: Checkout code
@@ -29,5 +50,19 @@ jobs:
       - name: Verify Java Version
         run: java -version
 
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            pg_isready -h localhost -p 5432 -U postgres && echo "Postgres is ready" && exit 0
+            echo "Waiting for Postgres..."
+            sleep 2
+          done
+          echo "Postgres did not become ready in time"
+          exit 1
+
       - name: Build & Test
-        run: ./mvnw clean test
+        run: ./mvnw -q clean test
+
