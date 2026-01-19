@@ -129,6 +129,28 @@ public class BookingServiceImpl implements BookingService {
 
     }
 
+    @Override
+    public String initiatePayments(Long bookingId) {
+//        fetching booking
+        BookingEntity booking = bookingRepository.findById(bookingId).orElseThrow(
+                () -> new ResourceNotFoundException("Booking NOT found with id:"+ bookingId));
+
+//        fetching the user
+        UserEntity user = getCurrentUser();
+
+//          checking if the user is the same
+        if(!user.equals(booking.getUser())) {
+            throw new UnauthorizedException("Booking does not belong to this user" +user.getId());
+        }
+
+//        checking if the booking is expired or not
+        if(hasBookingExpired(booking)){
+            throw new IllegalStateException("Booking has expired");
+
+        }
+        return "";
+    }
+
     public boolean hasBookingExpired(BookingEntity bookingDTO) {
         return bookingDTO.getCreatedAt().plusMinutes(10).isBefore(LocalDateTime.now());
     }
