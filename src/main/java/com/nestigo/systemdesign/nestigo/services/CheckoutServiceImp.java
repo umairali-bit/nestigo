@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -25,7 +27,9 @@ public class CheckoutServiceImp implements CheckoutService {
     @Override
     public String getCheckoutSession(BookingEntity booking, String successUrl, String failureUrl) {
 
-//        getting user
+
+        log.info("Creating session for booking with ID:{}", booking.getId());
+//         getting user
         UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
 //        creating a customer
@@ -54,11 +58,31 @@ public class CheckoutServiceImp implements CheckoutService {
                     .setCustomer(customer.getId())
                     .setSuccessUrl(successUrl)
                     .setCancelUrl(failureUrl)
+                    .addLineItem(
+                            SessionCreateParams.LineItem.builder()
+                                    .setQuantity(1L)
+                                    .setPriceData(
+                                            SessionCreateParams.LineItem.PriceData.builder()
+                                                    .setCurrency("usd")
+                                                    .setUnitAmount(booking.getPrice()
+                                                            .multiply(BigDecimal.valueOf(100))
+                                                            .longValue())
+                                                    .setProductData(
+                                                            SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                                                    .setName(booking.getHotel().getName() + " " + booking.getRoom().getType())
+                                                                    .setDescription("BookingEntity ID: " + booking.getId() )
+                                                                    .build()
+                                                    )
+                                                    .build()
+                                    )
+                                    .build()
+                    )
                     .build();
 
             Session session = Session.create(sessionParams);
 
             booking.setPaymentSessionId(session.getId());
+            log.info("Session created successfully for booking with ID:{}", booking.getId());
             bookingRepository.save(booking);
 
             return session.getUrl();
