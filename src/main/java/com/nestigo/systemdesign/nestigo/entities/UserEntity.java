@@ -57,6 +57,7 @@ public class UserEntity implements UserDetails {
         return Objects.equals(getId(), user.getId());
     }
 
+
     @Override
     public int hashCode() {
         return Objects.hashCode(getId());
