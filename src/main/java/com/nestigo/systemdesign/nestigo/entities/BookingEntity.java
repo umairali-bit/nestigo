@@ -72,6 +72,10 @@ public class BookingEntity {
     private BigDecimal price;
 
 
+    @Column(unique = true)
+    private String paymentSessionId;
+
+
 
 
 }

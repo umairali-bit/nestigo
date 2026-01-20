@@ -53,12 +53,6 @@ public class CheckoutServiceImp implements CheckoutService {
 
             Session session = Session.create(sessionParams);
 
-
-
-
-
-
-
         } catch (StripeException e) {
             throw new RuntimeException(e);
         }
