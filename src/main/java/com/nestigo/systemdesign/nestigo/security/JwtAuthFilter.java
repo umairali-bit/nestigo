@@ -37,8 +37,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-
-
 /* if Db lookup needs to be avoided
 //for minimal db lookups principal is a String email, not UserEntity
         try {
@@ -99,12 +97,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
  */
         try {
             final String requestTokenHeader = request.getHeader("Authorization");
-            if (requestTokenHeader == null || !requestTokenHeader.startsWith("Bearer")) {
+
+            if (requestTokenHeader == null || !requestTokenHeader.startsWith("Bearer ")) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            String token = requestTokenHeader.split("Bearer ")[1];
+            String token = requestTokenHeader.substring(7).trim();
             Long userId = jwtService.getUserId(token);
 
             if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -117,6 +116,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 );
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
+            System.out.println("JWT userId=" + userId + " URI=" + request.getRequestURI());
+
+
             filterChain.doFilter(request, response);
         } catch (JwtException ex) {
             handlerExceptionResolver.resolveException(request, response, null, ex);

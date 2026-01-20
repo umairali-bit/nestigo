@@ -3,25 +3,20 @@ package com.nestigo.systemdesign.nestigo.services;
 import com.nestigo.systemdesign.nestigo.dtos.BookingDTO;
 import com.nestigo.systemdesign.nestigo.dtos.BookingRequestDTO;
 import com.nestigo.systemdesign.nestigo.dtos.GuestDTO;
-import com.nestigo.systemdesign.nestigo.dtos.HotelDTO;
 import com.nestigo.systemdesign.nestigo.entities.*;
 import com.nestigo.systemdesign.nestigo.entities.enums.BookingStatus;
 import com.nestigo.systemdesign.nestigo.exceptions.ResourceNotFoundException;
 import com.nestigo.systemdesign.nestigo.exceptions.UnauthorizedException;
-import com.nestigo.systemdesign.nestigo.repositories.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import com.nestigo.systemdesign.nestigo.repositories.*;;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -39,6 +34,10 @@ public class BookingServiceImpl implements BookingService {
     private final UserRepository userRepository;
     private final GuestRepository guestRepository;
     private final ModelMapper modelMapper;
+    private final CheckoutService checkoutService;
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     @Override
     @Transactional
@@ -88,6 +87,8 @@ public class BookingServiceImpl implements BookingService {
         return modelMapper.map(booking, BookingDTO.class);
 
 
+
+
     }
 
     @Override
@@ -99,13 +100,14 @@ public class BookingServiceImpl implements BookingService {
                 new ResourceNotFoundException("Booking NOT found with id:"+ bookingId));
 
         UserEntity user = getCurrentUser();
+        System.out.println("booking.userId=" + booking.getUser().getId());
+        System.out.println("current.userId=" + getCurrentUser().getId());
+
 
         if(!user.equals(booking.getUser())) {
-            throw new UnauthorizedException("Booking does not belong to this user" +user.getId());
+            throw new UnauthorizedException("Booking does not belong to this user " +user.getId());
 
         }
-
-
 
         if(hasBookingExpired(booking)){
             throw new IllegalStateException("Booking has expired");
@@ -129,26 +131,31 @@ public class BookingServiceImpl implements BookingService {
 
     }
 
+
+
+
     @Override
+    @Transactional
     public String initiatePayments(Long bookingId) {
-//        fetching booking
         BookingEntity booking = bookingRepository.findById(bookingId).orElseThrow(
-                () -> new ResourceNotFoundException("Booking NOT found with id:"+ bookingId));
-
-//        fetching the user
+                () -> new ResourceNotFoundException("Booking not found with id: "+bookingId)
+        );
         UserEntity user = getCurrentUser();
-
-//          checking if the user is the same
         if(!user.equals(booking.getUser())) {
             throw new UnauthorizedException("Booking does not belong to this user" +user.getId());
         }
-
-//        checking if the booking is expired or not
-        if(hasBookingExpired(booking)){
-            throw new IllegalStateException("Booking has expired");
-
+        if (hasBookingExpired(booking)) {
+            throw new IllegalStateException("Booking has already expired");
         }
-        return "";
+
+        String sessionUrl = checkoutService.getCheckoutSession(booking,
+                frontendUrl+"/payments/" +bookingId +"/status",
+                frontendUrl+"/payments/" +bookingId +"/status");
+
+        booking.setBookingStatus(BookingStatus.PAYMENT_PENDING);
+        bookingRepository.save(booking);
+
+        return sessionUrl;
     }
 
     public boolean hasBookingExpired(BookingEntity bookingDTO) {
