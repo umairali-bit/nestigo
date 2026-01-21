@@ -78,6 +78,9 @@ public class CheckoutServiceImp implements CheckoutService {
                                     .build()
                     )
                     .build();
+            log.info("bookingId={}", booking.getId());
+            log.info("booking.price(dollars)={}", booking.getPrice());
+            log.info("unitAmount(cents)={}", booking.getPrice().multiply(BigDecimal.valueOf(100)));
 
             Session session = Session.create(sessionParams);
 

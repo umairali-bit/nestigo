@@ -17,14 +17,14 @@ public class StripeConfig {
 
 //  to check if the key is working
 
-        @Value("${stripe.secret.key}")
-    private String stripeSecretKey;
-
-    @PostConstruct
-    public void checkStripeKey() {
-        System.out.println("Stripe key loaded: " +
-                (stripeSecretKey != null && stripeSecretKey.startsWith("sk_")));
-    }
+//        @Value("${stripe.secret.key}")
+//    private String stripeSecretKey;
+//
+//    @PostConstruct
+//    public void checkStripeKey() {
+//        System.out.println("Stripe key loaded: " +
+//                (stripeSecretKey != null && stripeSecretKey.startsWith("sk_")));
+//    }
 
 
 }
