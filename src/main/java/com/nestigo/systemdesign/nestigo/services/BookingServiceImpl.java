@@ -8,11 +8,14 @@ import com.nestigo.systemdesign.nestigo.entities.enums.BookingStatus;
 import com.nestigo.systemdesign.nestigo.exceptions.ResourceNotFoundException;
 import com.nestigo.systemdesign.nestigo.exceptions.UnauthorizedException;
 import com.nestigo.systemdesign.nestigo.repositories.*;;
+import com.stripe.model.Event;
+import com.stripe.model.checkout.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -156,6 +159,28 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.save(booking);
 
         return sessionUrl;
+    }
+
+    @Override
+    @Transactional
+    public void capturePayments(Event event) {
+        if("checkout.session.completed".equals(event.getType())) {
+            Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
+
+            if (session == null) return;
+
+            String sessionId = session.getId();
+            BookingEntity booking = bookingRepository.findByPaymentSessionId(sessionId).
+                    orElseThrow(()-> new ResourceNotFoundException("Booking not found for session ID:" + sessionId));
+
+
+
+        } else {
+            log.warn("Unhandled event type: {}", event.getType());
+        }
+
+
+
     }
 
     public boolean hasBookingExpired(BookingEntity bookingDTO) {

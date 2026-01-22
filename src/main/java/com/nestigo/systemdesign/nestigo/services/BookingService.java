@@ -3,6 +3,7 @@ package com.nestigo.systemdesign.nestigo.services;
 import com.nestigo.systemdesign.nestigo.dtos.BookingDTO;
 import com.nestigo.systemdesign.nestigo.dtos.BookingRequestDTO;
 import com.nestigo.systemdesign.nestigo.dtos.GuestDTO;
+import com.stripe.model.Event;
 
 import java.util.List;
 
@@ -12,4 +13,6 @@ public interface BookingService {
     BookingDTO addGuests(Long bookingId, List<GuestDTO> guestDtoList);
 
     String initiatePayments(Long bookingId);
+
+    void capturePayments(Event event);
 }
