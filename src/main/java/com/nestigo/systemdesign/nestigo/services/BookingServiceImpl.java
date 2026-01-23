@@ -55,7 +55,7 @@ public class BookingServiceImpl implements BookingService {
         RoomEntity room = roomRepository.findById(bookingRequestDTO.getRoomId()).orElseThrow(() ->
                 new ResourceNotFoundException("Room NOT found with id:"+ bookingRequestDTO.getRoomId()));
 
-        List<InventoryEntity> inventoryList = inventoryRepository.findAndLockInventory(room.getId(),
+        List<InventoryEntity> inventoryList = inventoryRepository.findAndLockAvailableInventory(room.getId(),
                 bookingRequestDTO.getCheckInDate(), bookingRequestDTO.getCheckOutDate(),bookingRequestDTO.getRoomsCount());
 
         long daysCount = ChronoUnit.DAYS.between(bookingRequestDTO.getCheckInDate(), bookingRequestDTO.getCheckOutDate())+1;

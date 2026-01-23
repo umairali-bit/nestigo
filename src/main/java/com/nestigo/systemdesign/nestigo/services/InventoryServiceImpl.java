@@ -30,7 +30,7 @@ public class InventoryServiceImpl implements InventoryService{
 
     private final InventoryRepository inventoryRepository;
     private final HotelMinPriceRepository hotelMinPriceRepository;
-    private final ModelMapper modelMapper;
+
 
 
     @Override
