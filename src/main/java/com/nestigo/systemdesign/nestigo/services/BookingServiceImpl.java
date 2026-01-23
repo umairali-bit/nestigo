@@ -173,6 +173,8 @@ public class BookingServiceImpl implements BookingService {
             BookingEntity booking = bookingRepository.findByPaymentSessionId(sessionId).
                     orElseThrow(()-> new ResourceNotFoundException("Booking not found for session ID:" + sessionId));
 
+            booking.setBookingStatus(BookingStatus.CONFIRMED);
+            bookingRepository.save(booking);
 
 
         } else {
