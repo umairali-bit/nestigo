@@ -59,38 +59,34 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
     );
 
     @Query("""
-            SELECT i
-            FROM InventoryEntity i
-            WHERE i.room.id = :roomId
-                AND i.date BETWEEN :startDate AND :endDate
-                AND (i.totalCount - i.bookedCount - i.reservedCount) >= :roomsCount
-                AND i.closed = false
-                
+                SELECT i
+                FROM InventoryEntity i
+                WHERE i.room.id = :roomId
+                  AND i.date BETWEEN :startDate AND :endDate
+                  AND (i.totalCount - i.bookedCount) >= :numberOfRooms
+                  AND i.closed = false
             """)
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    List<InventoryEntity> findAndLockReservedInventory(
-            @Param("roomId") Long roomId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
-            @Param("roomsCount") Integer roomsCount
-    );
+    List<InventoryEntity> findAndLockReservedInventory(@Param("roomId") Long roomId,
+                                                 @Param("startDate") LocalDate startDate,
+                                                 @Param("endDate") LocalDate endDate,
+                                                 @Param("numberOfRooms") int numberOfRooms);
 
     @Modifying
     @Query("""
-            UPDATE InventoryEntity i 
-            SET i.reservedCount = i.reservedCount - :numberOfRooms,
-                i.bookedCount = i.bookedCount + :numberOfRooms
-            WHERE i.room.id = :roomId
-                AND i.date BETWEEN :startDate AND :endDate
-                AND (i.totalCount - i.bookedCount) >= :numberOfRooms
-                AND i.reservedCount >= :numberOfRooms
-                AND i.closed = false         
+                UPDATE InventoryEntity i
+                SET i.reservedCount = i.reservedCount - :numberOfRooms,
+                    i.bookedCount = i.bookedCount + :numberOfRooms
+                WHERE i.room.id = :roomId
+                  AND i.date BETWEEN :startDate AND :endDate
+                  AND (i.totalCount - i.bookedCount) >= :numberOfRooms
+                  AND i.reservedCount >= :numberOfRooms
+                  AND i.closed = false
             """)
-    void confirmedBooking(@Param("roomId") Long roomId,
-                          @Param("startDate") LocalDate startDate,
-                          @Param("endDate") LocalDate endDate,
-                          @Param("numberOfRooms") int numberOfRooms
-                          );
+    void confirmBooking(@Param("roomId") Long roomId,
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate,
+                        @Param("numberOfRooms") int numberOfRooms);
 
 
     List<InventoryEntity> findByHotelAndDateBetween(HotelEntity hotelEntity, LocalDate startDate, LocalDate endDate);

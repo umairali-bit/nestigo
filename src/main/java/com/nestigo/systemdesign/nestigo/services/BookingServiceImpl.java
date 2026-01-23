@@ -7,15 +7,15 @@ import com.nestigo.systemdesign.nestigo.entities.*;
 import com.nestigo.systemdesign.nestigo.entities.enums.BookingStatus;
 import com.nestigo.systemdesign.nestigo.exceptions.ResourceNotFoundException;
 import com.nestigo.systemdesign.nestigo.exceptions.UnauthorizedException;
-import com.nestigo.systemdesign.nestigo.repositories.*;;
+import com.nestigo.systemdesign.nestigo.repositories.*;
 import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
+import com.stripe.net.ApiResource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -167,7 +167,17 @@ public class BookingServiceImpl implements BookingService {
         if("checkout.session.completed".equals(event.getType())) {
             Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
 
-            if (session == null) return;
+            if (session == null) {
+                try {
+                    session = ApiResource.GSON.fromJson(
+                            event.getData().getObject().toJson(),
+                            Session.class
+                    );
+                } catch (Exception e) {
+                    log.warn("Failed to deserialize Stripe Session. eventId={}", event.getId(), e);
+                    return;
+                }
+            }
 
             String sessionId = session.getId();
             BookingEntity booking = bookingRepository.findByPaymentSessionId(sessionId).
@@ -175,6 +185,14 @@ public class BookingServiceImpl implements BookingService {
 
             booking.setBookingStatus(BookingStatus.CONFIRMED);
             bookingRepository.save(booking);
+
+            inventoryRepository.findAndLockReservedInventory(booking.getRoom().getId(), booking.getCheckInDate(),
+                    booking.getCheckOutDate(), booking.getRoomsCount());
+
+            inventoryRepository.confirmBooking(booking.getRoom().getId(), booking.getCheckInDate(),
+                    booking.getCheckOutDate(), booking.getRoomsCount());
+
+            log.info("capture payments for booking with id: {}", booking.getId());
 
 
         } else {
