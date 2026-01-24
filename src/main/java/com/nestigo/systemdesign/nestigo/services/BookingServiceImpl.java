@@ -10,8 +10,10 @@ import com.nestigo.systemdesign.nestigo.exceptions.UnauthorizedException;
 import com.nestigo.systemdesign.nestigo.repositories.*;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
+import com.stripe.model.Refund;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.ApiResource;
+import com.stripe.param.RefundCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -228,7 +230,16 @@ public class BookingServiceImpl implements BookingService {
         inventoryRepository.cancelBooking(booking.getRoom().getId(), booking.getCheckInDate(),
                 booking.getCheckOutDate(), booking.getRoomsCount());
 
-
+//        refund
+        try {
+            Session session = Session.retrieve(booking.getPaymentSessionId());
+            RefundCreateParams refundCreateParams = RefundCreateParams.builder()
+                    .setPaymentIntent(session.getPaymentIntent())
+                    .build();
+            Refund.create(refundCreateParams);
+        } catch (StripeException e) {
+            throw new RuntimeException(e);
+        }
 
 
     }
