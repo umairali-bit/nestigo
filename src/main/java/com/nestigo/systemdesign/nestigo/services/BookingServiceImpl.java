@@ -205,6 +205,22 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public void cancelBooking(Long bookingId) {
+//        checking validity of the Booking
+        BookingEntity booking = bookingRepository.findById(bookingId).orElseThrow(
+                () -> new ResourceNotFoundException("Booking not found with id: "+bookingId)
+        );
+        UserEntity user = getCurrentUser();
+        if(!user.equals(booking.getUser())) {
+            throw new UnauthorizedException("Booking does not belong to this user" +user.getId());
+        }
+        if (booking.getBookingStatus() != BookingStatus.CONFIRMED){
+            throw new IllegalStateException("Only confirmed booking can be cancelled");
+        }
+
+
+
+
+
 
     }
 
