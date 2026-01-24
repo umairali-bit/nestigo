@@ -204,6 +204,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public void cancelBooking(Long bookingId) {
 //        checking validity of the Booking
         BookingEntity booking = bookingRepository.findById(bookingId).orElseThrow(
@@ -216,6 +217,14 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getBookingStatus() != BookingStatus.CONFIRMED){
             throw new IllegalStateException("Only confirmed booking can be cancelled");
         }
+
+        booking.setBookingStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
+
+
+
+
+
 
 
 
