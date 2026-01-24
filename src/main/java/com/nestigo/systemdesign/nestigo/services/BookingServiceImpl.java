@@ -37,7 +37,6 @@ public class BookingServiceImpl implements BookingService {
     private final RoomRepository roomRepository;
     private final HotelRepository hotelRepository;
     private final InventoryRepository inventoryRepository;
-    private final UserRepository userRepository;
     private final GuestRepository guestRepository;
     private final ModelMapper modelMapper;
     private final CheckoutService checkoutService;
