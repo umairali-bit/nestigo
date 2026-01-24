@@ -203,6 +203,11 @@ public class BookingServiceImpl implements BookingService {
 
     }
 
+    @Override
+    public void cancelBooking(Long bookingId) {
+
+    }
+
     public boolean hasBookingExpired(BookingEntity bookingDTO) {
         return bookingDTO.getCreatedAt().plusMinutes(10).isBefore(LocalDateTime.now());
     }
