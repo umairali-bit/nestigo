@@ -6,6 +6,7 @@ import com.nestigo.systemdesign.nestigo.dtos.GuestDTO;
 import com.stripe.model.Event;
 
 import java.util.List;
+import java.util.Map;
 
 public interface BookingService {
     BookingDTO initializeBooking(BookingRequestDTO bookingRequestDTO);
@@ -17,4 +18,6 @@ public interface BookingService {
     void capturePayments(Event event);
 
     void cancelBooking(Long bookingId);
+
+    String getBookingStatus(Long bookingId);
 }
