@@ -66,11 +66,9 @@ public class BookingServiceImpl implements BookingService {
         }
 
 //      reserving the room
-         for(InventoryEntity inventory : inventoryList) {
-             inventory.setReservedCount(inventory.getReservedCount()+ bookingRequestDTO.getRoomsCount());
-         }
+        inventoryRepository.initBooking(room.getId(), bookingRequestDTO.getCheckInDate(),
+                bookingRequestDTO.getCheckOutDate(), bookingRequestDTO.getRoomsCount());
 
-         inventoryRepository.saveAll(inventoryList);
 
 
 
