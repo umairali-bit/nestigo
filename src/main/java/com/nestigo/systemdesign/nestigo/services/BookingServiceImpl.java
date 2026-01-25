@@ -8,6 +8,7 @@ import com.nestigo.systemdesign.nestigo.entities.enums.BookingStatus;
 import com.nestigo.systemdesign.nestigo.exceptions.ResourceNotFoundException;
 import com.nestigo.systemdesign.nestigo.exceptions.UnauthorizedException;
 import com.nestigo.systemdesign.nestigo.repositories.*;
+import com.nestigo.systemdesign.nestigo.strategy.PricingService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.Refund;
@@ -40,6 +41,7 @@ public class BookingServiceImpl implements BookingService {
     private final GuestRepository guestRepository;
     private final ModelMapper modelMapper;
     private final CheckoutService checkoutService;
+    private final PricingService pricingService;
 
     @Value("${frontend.url}")
     private String frontendUrl;
@@ -69,10 +71,8 @@ public class BookingServiceImpl implements BookingService {
         inventoryRepository.initBooking(room.getId(), bookingRequestDTO.getCheckInDate(),
                 bookingRequestDTO.getCheckOutDate(), bookingRequestDTO.getRoomsCount());
 
-
-
-
-        //TODO: calculate the dynamic price
+        BigDecimal priceOfOneRoom = pricingService.calculateTotalPrice(inventoryList);
+        BigDecimal totalPrice = priceOfOneRoom.multiply(BigDecimal.valueOf(bookingRequestDTO.getRoomsCount()));
 
          //create a booking
         BookingEntity booking =BookingEntity.builder()
@@ -83,7 +83,7 @@ public class BookingServiceImpl implements BookingService {
                 .checkOutDate(bookingRequestDTO.getCheckOutDate())
                 .user(getCurrentUser())
                 .roomsCount(bookingRequestDTO.getRoomsCount())
-                .price(BigDecimal.TEN)
+                .price(totalPrice)
                 .build();
 
         booking = bookingRepository.save(booking);

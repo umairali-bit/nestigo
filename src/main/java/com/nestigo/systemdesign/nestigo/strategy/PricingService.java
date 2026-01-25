@@ -24,7 +24,7 @@ public class PricingService {
     }
 
 //    returning price of the inventory list
-    public BigDecimal calculateDynamicPricing(List<InventoryEntity> inventoryEntityList) {
+    public BigDecimal calculateTotalPrice(List<InventoryEntity> inventoryEntityList) {
         return inventoryEntityList.stream()
                 .map(inventory -> calculateDynamicPricing(inventory))
                 .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
