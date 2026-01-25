@@ -27,7 +27,7 @@ public class WebhookController {
         try {
             Event event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
 
-            System.out.println("Webhook HIT ✅");
+            System.out.println("Webhook HIT");
             System.out.println("Event type=" + event.getType());
             System.out.println("Event id=" + event.getId());
 
@@ -35,7 +35,7 @@ public class WebhookController {
             return ResponseEntity.ok().build();
 
         } catch (SignatureVerificationException e) {
-            System.out.println("Invalid signature ❌ " + e.getMessage());
+            System.out.println("Invalid signature " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
