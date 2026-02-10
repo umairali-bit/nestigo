@@ -157,4 +157,10 @@ public class HotelServiceImpl implements HotelService{
 
 
     }
+
+    @Override
+    public List<HotelDTO> getAllHotels() {
+        List<HotelEntity> hotelEntities = hotelRepository.findByOwner();
+        return List.of();
+    }
 }

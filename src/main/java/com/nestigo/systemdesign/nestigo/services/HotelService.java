@@ -4,6 +4,8 @@ import com.nestigo.systemdesign.nestigo.dtos.HotelDTO;
 import com.nestigo.systemdesign.nestigo.dtos.HotelInfoDTO;
 import com.nestigo.systemdesign.nestigo.entities.HotelEntity;
 
+import java.util.List;
+
 public interface HotelService {
 
     HotelDTO createHotel(HotelDTO hotelDTO);
@@ -17,4 +19,6 @@ public interface HotelService {
     void activateHotel(Long id);
 
     HotelInfoDTO getHotelInfoById(Long hotelId);
+
+    List<HotelDTO> getAllHotels();
 }

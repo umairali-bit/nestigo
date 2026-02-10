@@ -28,6 +28,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import static com.nestigo.systemdesign.nestigo.utils.AppUtils.getCurrentUser;
+
 
 @Service
 @Slf4j
@@ -260,10 +262,7 @@ public class BookingServiceImpl implements BookingService {
         return bookingDTO.getCreatedAt().plusMinutes(10).isBefore(LocalDateTime.now());
     }
 
-    public UserEntity getCurrentUser() {
 
-        return (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    }
 
 
 }
