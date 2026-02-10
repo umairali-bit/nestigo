@@ -26,8 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import org.springframework.security.access.AccessDeniedException;
 
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -284,7 +286,40 @@ public class BookingServiceImpl implements BookingService {
 
     }
 
+    @Override
+    public HotelReportDTO getHotelReport(Long hotelId, LocalDate startDate, LocalDate endDate) {
+        HotelEntity hotel = hotelRepository.findById(hotelId).orElseThrow(()->
+                new ResourceNotFoundException("Hotel not found with id: "+hotelId));
 
+        UserEntity user = getCurrentUser();
+
+        log.info("Generating report for all the hotels with ID: {}", hotel.getId());
+
+        if (hotel.getOwner() == null ||
+                !user.getId().equals(hotel.getOwner().getId())) {
+            throw new AccessDeniedException("You are not the owner of this hotel");
+        }
+
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+
+        List<BookingEntity> bookings = bookingRepository.findNyHotelAndCreatedAtBetween(hotel, startDateTime, endDateTime);
+
+        Long totalConfirmedBookings = bookings.stream()
+                .filter(bookingEntity -> bookingEntity.getBookingStatus().equals(BookingStatus.CONFIRMED))
+                .count();
+
+        BigDecimal totalRevenueOfConfirmedBookings = bookings.stream()
+                .filter(bookingEntity -> bookingEntity.getBookingStatus().equals(BookingStatus.CONFIRMED))
+                .map(BookingEntity-> BookingEntity.getPrice())
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
+
+        BigDecimal avgRevenue = totalConfirmedBookings == 0 ? BigDecimal.ZERO : totalRevenueOfConfirmedBookings
+                .divide(BigDecimal.valueOf(totalConfirmedBookings), RoundingMode.HALF_UP);
+
+        return new HotelReportDTO(totalConfirmedBookings, totalRevenueOfConfirmedBookings, avgRevenue);
+
+        }
 
     public boolean hasBookingExpired(BookingEntity bookingDTO) {
         return bookingDTO.getCreatedAt().plusMinutes(10).isBefore(LocalDateTime.now());
