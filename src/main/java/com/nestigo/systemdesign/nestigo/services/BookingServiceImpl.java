@@ -265,6 +265,9 @@ public class BookingServiceImpl implements BookingService {
                 new ResourceNotFoundException("Hotel not found with id: "+hotelId));
 
         UserEntity user = getCurrentUser();
+
+        log.info("Fetching all the hotels with ID: {}", hotel.getId());
+
         if (hotel.getOwner() == null ||
                 !user.getId().equals(hotel.getOwner().getId())) {
             throw new AccessDeniedException("You are not the owner of this hotel");
