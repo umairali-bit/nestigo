@@ -3,6 +3,7 @@ package com.nestigo.systemdesign.nestigo.services;
 import com.nestigo.systemdesign.nestigo.dtos.BookingDTO;
 import com.nestigo.systemdesign.nestigo.dtos.BookingRequestDTO;
 import com.nestigo.systemdesign.nestigo.dtos.GuestDTO;
+import com.nestigo.systemdesign.nestigo.dtos.HotelReportDTO;
 import com.nestigo.systemdesign.nestigo.entities.*;
 import com.nestigo.systemdesign.nestigo.entities.enums.BookingStatus;
 import com.nestigo.systemdesign.nestigo.exceptions.ResourceNotFoundException;
@@ -24,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import org.springframework.security.access.AccessDeniedException;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -280,6 +283,8 @@ public class BookingServiceImpl implements BookingService {
                 .collect(Collectors.toList());
 
     }
+
+
 
     public boolean hasBookingExpired(BookingEntity bookingDTO) {
         return bookingDTO.getCreatedAt().plusMinutes(10).isBefore(LocalDateTime.now());

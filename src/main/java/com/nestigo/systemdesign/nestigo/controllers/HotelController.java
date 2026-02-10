@@ -2,6 +2,7 @@ package com.nestigo.systemdesign.nestigo.controllers;
 
 import com.nestigo.systemdesign.nestigo.dtos.BookingDTO;
 import com.nestigo.systemdesign.nestigo.dtos.HotelDTO;
+import com.nestigo.systemdesign.nestigo.dtos.HotelReportDTO;
 import com.nestigo.systemdesign.nestigo.entities.HotelEntity;
 import com.nestigo.systemdesign.nestigo.services.BookingService;
 import com.nestigo.systemdesign.nestigo.services.HotelService;
