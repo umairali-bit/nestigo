@@ -1,7 +1,9 @@
 package com.nestigo.systemdesign.nestigo.controllers;
 
+import com.nestigo.systemdesign.nestigo.dtos.BookingDTO;
 import com.nestigo.systemdesign.nestigo.dtos.HotelDTO;
 import com.nestigo.systemdesign.nestigo.entities.HotelEntity;
+import com.nestigo.systemdesign.nestigo.services.BookingService;
 import com.nestigo.systemdesign.nestigo.services.HotelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import java.util.List;
 public class HotelController {
 
     private final HotelService hotelService;
+    private final BookingService bookingService;
 
     @PostMapping
     public ResponseEntity<HotelDTO> createHotel(@RequestBody HotelDTO hotelDTO) {
@@ -58,6 +61,11 @@ public class HotelController {
     public ResponseEntity<List<HotelDTO>> getAllHotels() {
         return ResponseEntity.ok(hotelService.getAllHotels());
 
+    }
+
+    @GetMapping("{hotelId}/bookings")
+    public ResponseEntity<List<BookingDTO>> getAllBookings(@PathVariable Long hotelId) {
+        return ResponseEntity.ok(bookingService.getAllBookings(hotelId));
     }
 
 

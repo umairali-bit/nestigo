@@ -164,6 +164,7 @@ public class HotelServiceImpl implements HotelService{
     @Override
     public List<HotelDTO> getAllHotels() {
         UserEntity user = getCurrentUser();
+        log.info("Fetching all the hotels with ID: {}", user.getId());
         List<HotelEntity> hotelEntities = hotelRepository.findByOwner(user);
         return hotelEntities
                 .stream()
