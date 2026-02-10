@@ -19,14 +19,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import org.springframework.security.access.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.nestigo.systemdesign.nestigo.utils.AppUtils.getCurrentUser;
 
@@ -255,6 +256,25 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return booking.getBookingStatus().name();
+
+    }
+
+    @Override
+    public List<BookingDTO> getAllBookingsByHotelId(Long hotelId) {
+        HotelEntity hotel = hotelRepository.findById(hotelId).orElseThrow(()->
+                new ResourceNotFoundException("Hotel not found with id: "+hotelId));
+
+        UserEntity user = getCurrentUser();
+        if (hotel.getOwner() == null ||
+                !user.getId().equals(hotel.getOwner().getId())) {
+            throw new AccessDeniedException("You are not the owner of this hotel");
+        }
+
+       List<BookingEntity> bookings = bookingRepository.findByHotel(hotel);
+
+        return bookings.stream()
+                .map((element) -> modelMapper.map(element, BookingDTO.class))
+                .collect(Collectors.toList());
 
     }
 
