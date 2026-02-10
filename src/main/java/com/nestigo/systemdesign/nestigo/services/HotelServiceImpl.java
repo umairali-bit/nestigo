@@ -18,6 +18,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.nestigo.systemdesign.nestigo.utils.AppUtils.getCurrentUser;
 
 @Service
 @Slf4j
@@ -160,7 +163,11 @@ public class HotelServiceImpl implements HotelService{
 
     @Override
     public List<HotelDTO> getAllHotels() {
-        List<HotelEntity> hotelEntities = hotelRepository.findByOwner();
-        return List.of();
+        UserEntity user = getCurrentUser();
+        List<HotelEntity> hotelEntities = hotelRepository.findByOwner(user);
+        return hotelEntities
+                .stream()
+                .map((element) -> modelMapper.map(element, HotelDTO.class))
+                .collect(Collectors.toList());
     }
 }
