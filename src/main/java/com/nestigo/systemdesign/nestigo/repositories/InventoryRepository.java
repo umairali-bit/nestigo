@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -22,15 +23,15 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
     void deleteByRoom(RoomEntity room);
 
     @Query("""
-    SELECT DISTINCT i.hotel
-    FROM InventoryEntity i
-    WHERE i.city = :city
-      AND i.date BETWEEN :startDate AND :endDate
-      AND i.closed = false
-      AND (i.totalCount - i.bookedCount - i.reservedCount) >= :roomsCount
-    GROUP BY i.hotel, i.room
-    HAVING COUNT(i.date) = :dateCount
-""")
+                SELECT DISTINCT i.hotel
+                FROM InventoryEntity i
+                WHERE i.city = :city
+                  AND i.date BETWEEN :startDate AND :endDate
+                  AND i.closed = false
+                  AND (i.totalCount - i.bookedCount - i.reservedCount) >= :roomsCount
+                GROUP BY i.hotel, i.room
+                HAVING COUNT(i.date) = :dateCount
+            """)
     Page<HotelEntity> findHotelsWithAvailableInventory(
             @Param("city") String city,
             @Param("startDate") LocalDate startDate,
@@ -68,9 +69,9 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
             """)
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<InventoryEntity> findAndLockReservedInventory(@Param("roomId") Long roomId,
-                                                 @Param("startDate") LocalDate startDate,
-                                                 @Param("endDate") LocalDate endDate,
-                                                 @Param("numberOfRooms") int numberOfRooms);
+                                                       @Param("startDate") LocalDate startDate,
+                                                       @Param("endDate") LocalDate endDate,
+                                                       @Param("numberOfRooms") int numberOfRooms);
 
     @Modifying
     @Query("""
@@ -91,18 +92,17 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
 
     @Modifying
     @Query("""
-                UPDATE InventoryEntity i
-                SET i.reservedCount = i.reservedCount + :numberOfRooms
-                WHERE i.room.id = :roomId
-                    AND i.date BETWEEN :startDate AND :endDate
-                    AND (i.totalCount - i.bookedCount - i.reservedCount) >= :numberOfRooms
-                    AND i.closed = false
-           """)
+                 UPDATE InventoryEntity i
+                 SET i.reservedCount = i.reservedCount + :numberOfRooms
+                 WHERE i.room.id = :roomId
+                     AND i.date BETWEEN :startDate AND :endDate
+                     AND (i.totalCount - i.bookedCount - i.reservedCount) >= :numberOfRooms
+                     AND i.closed = false
+            """)
     void initBooking(@Param("roomId") Long roomId,
-                        @Param("startDate") LocalDate startDate,
-                        @Param("endDate") LocalDate endDate,
-                        @Param("numberOfRooms") int numberOfRooms);
-
+                     @Param("startDate") LocalDate startDate,
+                     @Param("endDate") LocalDate endDate,
+                     @Param("numberOfRooms") int numberOfRooms);
 
 
     @Modifying
@@ -121,4 +121,33 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
 
 
     List<InventoryEntity> findByHotelAndDateBetween(HotelEntity hotelEntity, LocalDate startDate, LocalDate endDate);
+
+    @Query("""
+              SELECT COUNT(i)
+              FROM InventoryEntity i
+              WHERE i.room.id = :roomId
+                AND i.date >= :fromDate
+                AND (i.bookedCount + i.reservedCount) > :newTotal
+            """)
+    long countDatesOverCapacity(@Param("roomId") Long roomId,
+                                @Param("fromDate") LocalDate fromDate,
+                                @Param("newTotal") Integer newTotal);
+
+    @Modifying
+    @Query("""
+              UPDATE InventoryEntity i
+              SET i.totalCount = :totalCount,
+                  i.price = :price
+              WHERE i.room.id = :roomId
+                AND i.date >= :fromDate
+                AND i.surgeFactor = 1
+            """)
+    int updateFutureInventory(@Param("roomId") Long roomId,
+                              @Param("fromDate") LocalDate fromDate,
+                              @Param("totalCount") Integer totalCount,
+                              @Param("price") BigDecimal price);
+
+
 }
+
+

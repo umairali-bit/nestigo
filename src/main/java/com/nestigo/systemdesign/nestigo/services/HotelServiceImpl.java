@@ -79,8 +79,8 @@ public class HotelServiceImpl implements HotelService{
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with ID" + id));
         //checking the owner
         UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(!user.equals(existingHotel.getOwner())){
-            throw new UnauthorizedException("This user is not the owner of this hotel" + id);
+        if (existingHotel.getOwner() == null || !user.getId().equals(existingHotel.getOwner().getId())) {
+            throw new UnauthorizedException("This user is not the owner of this hotel " + id);
         }
 
         modelMapper.map(hotelDTO, existingHotel);

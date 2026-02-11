@@ -8,6 +8,7 @@ import com.nestigo.systemdesign.nestigo.entities.UserEntity;
 import com.nestigo.systemdesign.nestigo.exceptions.ResourceNotFoundException;
 import com.nestigo.systemdesign.nestigo.exceptions.UnauthorizedException;
 import com.nestigo.systemdesign.nestigo.repositories.HotelRepository;
+import com.nestigo.systemdesign.nestigo.repositories.InventoryRepository;
 import com.nestigo.systemdesign.nestigo.repositories.RoomRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +32,7 @@ public class RoomServiceImpl implements RoomService{
 
     private final RoomRepository roomRepository;
     private final HotelRepository hotelRepository;
+    private final InventoryRepository inventoryRepository;
     private final InventoryService inventoryService;
     private final ModelMapper modelMapper;
 
@@ -104,32 +108,52 @@ public class RoomServiceImpl implements RoomService{
     }
 
     @Override
+    @Transactional
     public RoomDTO updateRoomById(Long hotelId, Long roomId, RoomDTO roomDTO) {
-        log.info("Updating the room with ID: {}", hotelId);
+        HotelEntity existingHotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with ID " + hotelId));
 
-//        getting hotel by id
-        HotelEntity existingHotel = hotelRepository
-                .findById(hotelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with ID" + hotelId));
-//        checking the owner
         UserEntity user = getCurrentUser();
-        if(!user.equals(existingHotel.getOwner())){
-            throw new UnauthorizedException("This user is not the owner of this hotel" + hotelId);
+        if (existingHotel.getOwner() == null || !user.getId().equals(existingHotel.getOwner().getId())) {
+            throw new UnauthorizedException("This user is not the owner of this hotel " + hotelId);
         }
 
         RoomEntity room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room NOT found with ID: " + roomId));
 
+        if (!room.getHotel().getId().equals(hotelId)) {
+            throw new IllegalStateException("Room does not belong to this hotel");
+        }
+
+        Integer oldTotalCount = room.getTotalCount();
+        BigDecimal oldBasePrice = room.getBasePrice();
+
         modelMapper.map(roomDTO, room);
         room.setId(roomId);
 
-//        TODO: if price or inventory is updated, then update the inventory for this room
+        boolean totalCountChanged = roomDTO.getTotalCount() != null && !room.getTotalCount().equals(oldTotalCount);
+        boolean basePriceChanged  = roomDTO.getBasePrice() != null && room.getBasePrice().compareTo(oldBasePrice) != 0;
+
+        if (totalCountChanged || basePriceChanged) {
+            LocalDate fromDate = LocalDate.now();
+
+            if (totalCountChanged && room.getTotalCount() < oldTotalCount) {
+                long badDates = inventoryRepository.countDatesOverCapacity(roomId, fromDate, room.getTotalCount());
+                if (badDates > 0) {
+                    throw new IllegalStateException("Cannot reduce totalCount below already booked+reserved for some future dates");
+                }
+            }
+
+            Integer newTotal = totalCountChanged ? room.getTotalCount() : oldTotalCount;
+            BigDecimal newPrice = basePriceChanged ? room.getBasePrice() : oldBasePrice;
+
+            inventoryRepository.updateFutureInventory(roomId, fromDate, newTotal, newPrice);
+        }
 
         room = roomRepository.save(room);
-
         return modelMapper.map(room, RoomDTO.class);
-
     }
+
 
 
 }
