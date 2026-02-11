@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.nestigo.systemdesign.nestigo.utils.AppUtils.getCurrentUser;
+
 
 @Service
 @Slf4j
@@ -99,9 +101,35 @@ public class RoomServiceImpl implements RoomService{
         inventoryService.deleteAllInventories(room);
 
         roomRepository.deleteById(id);
+    }
 
+    @Override
+    public RoomDTO updateRoomById(Long hotelId, Long roomId, RoomDTO roomDTO) {
+        log.info("Updating the room with ID: {}", hotelId);
 
+//        getting hotel by id
+        HotelEntity existingHotel = hotelRepository
+                .findById(hotelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with ID" + hotelId));
+//        checking the owner
+        UserEntity user = getCurrentUser();
+        if(!user.equals(existingHotel.getOwner())){
+            throw new UnauthorizedException("This user is not the owner of this hotel" + hotelId);
+        }
 
+        RoomEntity room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room NOT found with ID: " + roomId));
+
+        modelMapper.map(roomDTO, room);
+        room.setId(roomId);
+
+//        TODO: if price or inventory is updated, then update the inventory for this room
+
+        room = roomRepository.save(room);
+
+        return modelMapper.map(room, RoomDTO.class);
 
     }
+
+
 }

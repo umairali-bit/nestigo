@@ -53,7 +53,7 @@ public class RoomAdminController {
     public ResponseEntity<RoomDTO> updateRoomById(@PathVariable Long hotelId,
                                                   @PathVariable Long roomId,
                                                   @RequestBody RoomDTO roomDTO) {
-        return ResponseEntity.ok(roomService.updateRoomById(roomId));
+        return ResponseEntity.ok(roomService.updateRoomById(hotelId, roomId, roomDTO));
     }
 
 
