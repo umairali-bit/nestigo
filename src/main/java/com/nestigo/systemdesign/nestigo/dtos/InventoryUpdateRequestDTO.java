@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
-public class InventoryUpdateDTO {
+public class InventoryUpdateRequestDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private BigDecimal  surgeFactor;
