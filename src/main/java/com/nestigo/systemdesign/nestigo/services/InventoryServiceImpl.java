@@ -1,14 +1,12 @@
 package com.nestigo.systemdesign.nestigo.services;
 
-import com.nestigo.systemdesign.nestigo.dtos.HotelDTO;
-import com.nestigo.systemdesign.nestigo.dtos.HotelPriceDTO;
-import com.nestigo.systemdesign.nestigo.dtos.HotelSearchRequest;
-import com.nestigo.systemdesign.nestigo.dtos.InventoryDTO;
+import com.nestigo.systemdesign.nestigo.dtos.*;
 import com.nestigo.systemdesign.nestigo.entities.*;
 import com.nestigo.systemdesign.nestigo.exceptions.ResourceNotFoundException;
 import com.nestigo.systemdesign.nestigo.repositories.HotelMinPriceRepository;
 import com.nestigo.systemdesign.nestigo.repositories.InventoryRepository;
 import com.nestigo.systemdesign.nestigo.repositories.RoomRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
@@ -32,13 +30,12 @@ import static com.nestigo.systemdesign.nestigo.utils.AppUtils.getCurrentUser;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class InventoryServiceImpl implements InventoryService{
+public class InventoryServiceImpl implements InventoryService {
 
     private final InventoryRepository inventoryRepository;
     private final HotelMinPriceRepository hotelMinPriceRepository;
     private final RoomRepository roomRepository;
     private final ModelMapper modelMapper;
-
 
 
     @Override
@@ -69,7 +66,7 @@ public class InventoryServiceImpl implements InventoryService{
 
     @Override
     public void deleteAllInventories(RoomEntity room) {
-        log.info("deleteAllInventories with id:{}",room.getId());
+        log.info("deleteAllInventories with id:{}", room.getId());
         inventoryRepository.deleteByRoom(room);
 
     }
@@ -85,18 +82,18 @@ public class InventoryServiceImpl implements InventoryService{
         );
 
 //      business logic - 90 days
-       Page<HotelPriceDTO> hotelPage =
-               hotelMinPriceRepository.findHotelsWithAvailableInventory(hotelSearchRequest.getCity(),
-                                                             hotelSearchRequest.getStartDate(),
-                                                             hotelSearchRequest.getEndDate(),
-                                                             hotelSearchRequest.getRoomCount(),
-                                                             dateCount, pageable);
+        Page<HotelPriceDTO> hotelPage =
+                hotelMinPriceRepository.findHotelsWithAvailableInventory(hotelSearchRequest.getCity(),
+                        hotelSearchRequest.getStartDate(),
+                        hotelSearchRequest.getEndDate(),
+                        hotelSearchRequest.getRoomCount(),
+                        dateCount, pageable);
         return hotelPage;
     }
 
     @Override
     public List<InventoryDTO> getAllInventoryByRoom(Long roomId) {
-        log.info("getAllInventoryByRoom with id:{}",roomId);
+        log.info("getAllInventoryByRoom with id:{}", roomId);
 
         RoomEntity room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + roomId));
@@ -108,8 +105,31 @@ public class InventoryServiceImpl implements InventoryService{
 
         return inventoryRepository.findByRoomOrderByDate(room)
                 .stream()
-                .map((element)-> modelMapper.map(element, InventoryDTO.class))
+                .map((element) -> modelMapper.map(element, InventoryDTO.class))
                 .collect(Collectors.toList());
+
+    }
+
+    @Override
+    @Transactional
+    public void updateInventory(Long roomId, InventoryUpdateRequestDTO inventoryUpdateRequestDTO) {
+        log.info("Updating room inventory with id:{}", roomId);
+
+        RoomEntity room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + roomId));
+
+        UserEntity user = getCurrentUser();
+        if (room.getHotel().getOwner() == null || !user.getId().equals(room.getHotel().getOwner().getId())) {
+            throw new AccessDeniedException("You are not the owner of this hotel");
+        }
+
+        inventoryRepository.getInventoryAndLockBeforeUpdate(roomId, inventoryUpdateRequestDTO.getStartDate(),
+                inventoryUpdateRequestDTO.getEndDate());
+
+        inventoryRepository.updateInventory(roomId, inventoryUpdateRequestDTO.getStartDate(),
+                inventoryUpdateRequestDTO.getEndDate(), inventoryUpdateRequestDTO.getClosed(),
+                inventoryUpdateRequestDTO.getSurgeFactor());
+
 
     }
 }
