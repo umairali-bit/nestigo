@@ -5,10 +5,7 @@ import com.nestigo.systemdesign.nestigo.dtos.InventoryDTO;
 import com.nestigo.systemdesign.nestigo.services.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,6 +20,8 @@ public class InventoryController {
     public ResponseEntity<List<InventoryDTO>> getAllInventoryByRoom(@PathVariable Long roomId) {
         return ResponseEntity.ok(inventoryService.getAllInventoryByRoom(roomId));
     }
+
+
 
 
 

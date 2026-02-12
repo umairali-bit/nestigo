@@ -111,9 +111,5 @@ public class InventoryServiceImpl implements InventoryService{
                 .map((element)-> modelMapper.map(element, InventoryDTO.class))
                 .collect(Collectors.toList());
 
-
-
-
-
     }
 }
