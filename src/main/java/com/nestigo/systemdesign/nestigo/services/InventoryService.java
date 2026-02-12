@@ -4,8 +4,11 @@ package com.nestigo.systemdesign.nestigo.services;
 import com.nestigo.systemdesign.nestigo.dtos.HotelDTO;
 import com.nestigo.systemdesign.nestigo.dtos.HotelPriceDTO;
 import com.nestigo.systemdesign.nestigo.dtos.HotelSearchRequest;
+import com.nestigo.systemdesign.nestigo.dtos.InventoryDTO;
 import com.nestigo.systemdesign.nestigo.entities.RoomEntity;
 import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 public interface InventoryService {
 
@@ -16,5 +19,5 @@ public interface InventoryService {
     Page<HotelPriceDTO>  searchHotels(HotelSearchRequest hotelSearchRequest);
 
 
-
+    List<InventoryDTO> getAllInventoryByRoom(Long roomId);
 }

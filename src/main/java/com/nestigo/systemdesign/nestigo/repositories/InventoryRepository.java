@@ -147,6 +147,8 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
                               @Param("totalCount") Integer totalCount,
                               @Param("price") BigDecimal price);
 
+    List<InventoryEntity> findByRoomOrderByDate(RoomEntity roomEntity);
+
 
 }
 

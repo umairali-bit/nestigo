@@ -1,6 +1,7 @@
 package com.nestigo.systemdesign.nestigo.controllers;
 
 
+import com.nestigo.systemdesign.nestigo.dtos.InventoryDTO;
 import com.nestigo.systemdesign.nestigo.services.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

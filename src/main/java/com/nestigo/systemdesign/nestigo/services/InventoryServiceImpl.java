@@ -3,24 +3,30 @@ package com.nestigo.systemdesign.nestigo.services;
 import com.nestigo.systemdesign.nestigo.dtos.HotelDTO;
 import com.nestigo.systemdesign.nestigo.dtos.HotelPriceDTO;
 import com.nestigo.systemdesign.nestigo.dtos.HotelSearchRequest;
-import com.nestigo.systemdesign.nestigo.entities.HotelEntity;
-import com.nestigo.systemdesign.nestigo.entities.HotelMinPriceEntity;
-import com.nestigo.systemdesign.nestigo.entities.InventoryEntity;
+import com.nestigo.systemdesign.nestigo.dtos.InventoryDTO;
+import com.nestigo.systemdesign.nestigo.entities.*;
+import com.nestigo.systemdesign.nestigo.exceptions.ResourceNotFoundException;
 import com.nestigo.systemdesign.nestigo.repositories.HotelMinPriceRepository;
 import com.nestigo.systemdesign.nestigo.repositories.InventoryRepository;
-import com.nestigo.systemdesign.nestigo.entities.RoomEntity;
+import com.nestigo.systemdesign.nestigo.repositories.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.nestigo.systemdesign.nestigo.utils.AppUtils.getCurrentUser;
 
 
 @Service
@@ -30,6 +36,8 @@ public class InventoryServiceImpl implements InventoryService{
 
     private final InventoryRepository inventoryRepository;
     private final HotelMinPriceRepository hotelMinPriceRepository;
+    private final RoomRepository roomRepository;
+    private final ModelMapper modelMapper;
 
 
 
@@ -56,8 +64,6 @@ public class InventoryServiceImpl implements InventoryService{
             inventoryRepository.save(inventory);
 
         }
-
-
 
     }
 
@@ -86,5 +92,28 @@ public class InventoryServiceImpl implements InventoryService{
                                                              hotelSearchRequest.getRoomCount(),
                                                              dateCount, pageable);
         return hotelPage;
+    }
+
+    @Override
+    public List<InventoryDTO> getAllInventoryByRoom(Long roomId) {
+        log.info("getAllInventoryByRoom with id:{}",roomId);
+
+        RoomEntity room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + roomId));
+
+        UserEntity user = getCurrentUser();
+        if (room.getHotel().getOwner() == null || !user.getId().equals(room.getHotel().getOwner().getId())) {
+            throw new AccessDeniedException("You are not the owner of this hotel");
+        }
+
+        return inventoryRepository.findByRoomOrderByDate(room)
+                .stream()
+                .map((element)-> modelMapper.map(element, InventoryDTO.class))
+                .collect(Collectors.toList());
+
+
+
+
+
     }
 }
