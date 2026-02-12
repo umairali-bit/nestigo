@@ -15,8 +15,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
-@RequiredArgsConstructor
-@NoArgsConstructor
 public class InventoryDTO {
     private Long id;
     private LocalDate date;

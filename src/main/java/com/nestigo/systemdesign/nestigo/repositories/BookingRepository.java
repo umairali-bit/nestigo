@@ -16,5 +16,5 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
 
     List<BookingEntity> findByHotel(HotelEntity hotel);
 
-    List<BookingEntity> findNyHotelAndCreatedAtBetween(HotelEntity hotel, LocalDateTime startDate, LocalDateTime endDate);
+    List<BookingEntity> findByHotelAndCreatedAtBetween(HotelEntity hotel, LocalDateTime startDate, LocalDateTime endDate);
 }
