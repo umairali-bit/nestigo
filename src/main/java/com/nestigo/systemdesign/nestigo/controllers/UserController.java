@@ -31,4 +31,6 @@ public class UserController {
         return ResponseEntity.ok(bookingService.getMyBookings());
     }
 
+
+
 }
