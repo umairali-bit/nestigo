@@ -3,6 +3,7 @@ package com.nestigo.systemdesign.nestigo.repositories;
 import com.nestigo.systemdesign.nestigo.entities.BookingEntity;
 import com.nestigo.systemdesign.nestigo.entities.HotelEntity;
 import com.nestigo.systemdesign.nestigo.entities.UserEntity;
+import org.apache.logging.log4j.simple.internal.SimpleProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
@@ -17,4 +18,6 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
     List<BookingEntity> findByHotel(HotelEntity hotel);
 
     List<BookingEntity> findByHotelAndCreatedAtBetween(HotelEntity hotel, LocalDateTime startDate, LocalDateTime endDate);
+
+
 }

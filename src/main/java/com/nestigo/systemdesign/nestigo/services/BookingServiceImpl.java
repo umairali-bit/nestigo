@@ -321,6 +321,18 @@ public class BookingServiceImpl implements BookingService {
 
         }
 
+    @Override
+    public List<BookingDTO> getMyBookings() {
+
+        UserEntity user = getCurrentUser();
+
+        return bookingRepository.findByUser(user)
+                .stream()
+                .map((element) -> modelMapper.map(element, BookingDTO.class))
+                .collect(Collectors.toList());
+
+    }
+
     public boolean hasBookingExpired(BookingEntity bookingDTO) {
         return bookingDTO.getCreatedAt().plusMinutes(10).isBefore(LocalDateTime.now());
     }
