@@ -158,7 +158,7 @@ public interface InventoryRepository extends JpaRepository<InventoryEntity, Long
                   AND i.date BETWEEN :startDate AND :endDate
             """)
 
-    void getInventoryAndLockBeforeUpdate(@Param("roomId") Long roomId,
+    List<InventoryEntity> getInventoryAndLockBeforeUpdate(@Param("roomId") Long roomId,
                          @Param("startDate") LocalDate startDate,
                          @Param("endDate") LocalDate endDate);
 
