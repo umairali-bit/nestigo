@@ -5,6 +5,7 @@ import com.nestigo.systemdesign.nestigo.dtos.UserDTO;
 import com.nestigo.systemdesign.nestigo.entities.UserEntity;
 import com.nestigo.systemdesign.nestigo.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -18,6 +19,7 @@ import static com.nestigo.systemdesign.nestigo.utils.AppUtils.getCurrentUser;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepository userRepository;
@@ -46,7 +48,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public UserDTO getMyProfile() {
 
-        return modelMapper.map(getCurrentUser(),UserDTO.class);
+        UserEntity user = getCurrentUser();
+
+        log.info("Getting the profile for the User with id: {}", getCurrentUser().getId());
+        return modelMapper.map(user,UserDTO.class);
 
     }
 
