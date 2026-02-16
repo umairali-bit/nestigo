@@ -16,8 +16,6 @@ public class UserDTO {
 
     private String email;
 
-    private String password;//encoded
-
     private String name;
 
     private Gender gender;
