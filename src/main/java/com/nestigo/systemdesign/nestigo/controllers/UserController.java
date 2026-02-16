@@ -34,7 +34,7 @@ public class UserController {
     }
 
 
-    @GetMapping("/myBookings")
+    @GetMapping("/profile")
     public ResponseEntity<UserDTO> getMyProfile() {
         return ResponseEntity.ok(userService.getMyProfile());
     }

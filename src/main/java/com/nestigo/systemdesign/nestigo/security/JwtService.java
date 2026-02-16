@@ -56,7 +56,7 @@ public class JwtService {
                 .getPayload();
 
     }
-// if we want to avoid db lookup
+    // if we want to avoid db lookup
     //extracting userId
     public Long getUserId(String token) {
         return Long.parseLong(getClaims(token).getSubject());
@@ -79,10 +79,3 @@ public class JwtService {
 
 
 }
-
-
-
-
-
-
-
