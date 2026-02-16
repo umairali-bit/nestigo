@@ -3,6 +3,8 @@ package com.nestigo.systemdesign.nestigo.controllers;
 
 import com.nestigo.systemdesign.nestigo.dtos.BookingDTO;
 import com.nestigo.systemdesign.nestigo.dtos.ProfileUpdateRequestDTO;
+import com.nestigo.systemdesign.nestigo.dtos.UserDTO;
+import com.nestigo.systemdesign.nestigo.entities.UserEntity;
 import com.nestigo.systemdesign.nestigo.services.BookingService;
 import com.nestigo.systemdesign.nestigo.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -32,5 +34,9 @@ public class UserController {
     }
 
 
+    @GetMapping("/myBookings")
+    public ResponseEntity<UserDTO> getMyProfile() {
+        return ResponseEntity.ok(userService.getMyProfile());
+    }
 
 }
