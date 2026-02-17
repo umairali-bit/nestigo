@@ -2,10 +2,12 @@ package com.nestigo.systemdesign.nestigo.controllers;
 
 
 import com.nestigo.systemdesign.nestigo.dtos.BookingDTO;
+import com.nestigo.systemdesign.nestigo.dtos.GuestDTO;
 import com.nestigo.systemdesign.nestigo.dtos.ProfileUpdateRequestDTO;
 import com.nestigo.systemdesign.nestigo.dtos.UserDTO;
 import com.nestigo.systemdesign.nestigo.entities.UserEntity;
 import com.nestigo.systemdesign.nestigo.services.BookingService;
+import com.nestigo.systemdesign.nestigo.services.GuestService;
 import com.nestigo.systemdesign.nestigo.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ public class UserController {
 
     private final UserService userService;
     private final BookingService bookingService;
+    private final GuestService guestService;
 
     @PatchMapping("/profile")
     public ResponseEntity<Void> updateProfile(@RequestBody ProfileUpdateRequestDTO profileUpdateRequestDTO) {
@@ -42,7 +45,7 @@ public class UserController {
 
     @GetMapping("/guests")
     @Operation(summary = "Get all my guests", tags = {"Booking Guests"})
-    public ResponseEntity<List<BookingDTO>> getMyGuests() {
+    public ResponseEntity<List<GuestDTO>> getMyGuests() {
         return ResponseEntity.ok(guestService.getAllGuests());
     }
 
