@@ -11,6 +11,7 @@ import com.nestigo.systemdesign.nestigo.services.GuestService;
 import com.nestigo.systemdesign.nestigo.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,5 +49,13 @@ public class UserController {
     public ResponseEntity<List<GuestDTO>> getMyGuests() {
         return ResponseEntity.ok(guestService.getAllGuests());
     }
+
+    @PostMapping("/guests")
+    @Operation(summary = "Add a new guest to my guest list", tags = {"Booking Guests"})
+    public ResponseEntity<GuestDTO> createGuest(@RequestBody GuestDTO guestDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).build(guestService.addNewGuest(guestDTO));
+    }
+
+
 
 }
