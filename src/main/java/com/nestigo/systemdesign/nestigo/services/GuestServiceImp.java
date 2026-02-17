@@ -35,4 +35,17 @@ public class GuestServiceImp implements GuestService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public GuestDTO addNewGuest(GuestDTO guestDTO) {
+        UserEntity user = getCurrentUser();
+        log.info("Adding new guest: {}", guestDTO);
+        GuestEntity guest = modelMapper.map(guestDTO, GuestEntity.class);
+        guest.setUser(user);
+        GuestEntity savedGuest = guestRepository.save(guest);
+        log.info("Guest added with ID: {}", savedGuest.getId());
+        return modelMapper.map(savedGuest, GuestDTO.class);
+
+
+    }
+
 }

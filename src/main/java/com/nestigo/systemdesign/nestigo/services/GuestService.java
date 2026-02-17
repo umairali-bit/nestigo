@@ -11,4 +11,6 @@ import java.util.List;
 public interface GuestService {
 
     List<GuestDTO> getAllGuests();
+
+    GuestDTO addNewGuest(GuestDTO guestDTO);
 }
