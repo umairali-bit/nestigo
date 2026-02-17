@@ -74,4 +74,21 @@ public class GuestServiceImp implements GuestService {
 
     }
 
+    @Override
+    public void deleteGuest(Long guestId) {
+        log.info("Deleting guest with ID: {}", guestId);
+        GuestEntity guest = guestRepository.findById(guestId)
+                .orElseThrow(()-> new EntityNotFoundException("Guest with ID: " + guestId));
+
+        UserEntity user = getCurrentUser();
+
+        if(!user.equals(guest.getUser())) {
+            throw new AccessDeniedException("You are not allowed to delete this guest");
+        }
+
+        guestRepository.deleteById(guestId);
+        log.info("Guest with ID: {} deleted successfully", guestId);
+
+    }
+
 }

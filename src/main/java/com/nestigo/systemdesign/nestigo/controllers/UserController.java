@@ -63,6 +63,13 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("guests/{guestId}")
+    @Operation(summary = "Remove a guest", tags = {"Booking Guests"})
+    public ResponseEntity<Void> deleteGuest(@PathVariable Long guestId) {
+        guestService.deleteGuest(guestId);
+        return ResponseEntity.noContent().build();
+    }
+
 
 
 

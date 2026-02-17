@@ -15,4 +15,6 @@ public interface GuestService {
     GuestDTO addNewGuest(GuestDTO guestDTO);
 
     void updateGuest(Long guestId, GuestDTO guestDTO);
+
+    void deleteGuest(Long guestId);
 }
