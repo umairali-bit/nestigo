@@ -56,6 +56,14 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(guestService.addNewGuest(guestDTO));
     }
 
+    @PostMapping("/guests/{guestId}")
+    @Operation(summary = "Update a guest", tags = {"Booking Guests"})
+    public ResponseEntity<Void> updateGuest(@PathVariable Long guestId, @RequestBody GuestDTO guestDTO) {
+        guestService.updateGuest(guestId, guestDTO);
+        return ResponseEntity.noContent().build();
+    }
+
+
 
 
 }

@@ -13,4 +13,6 @@ public interface GuestService {
     List<GuestDTO> getAllGuests();
 
     GuestDTO addNewGuest(GuestDTO guestDTO);
+
+    void updateGuest(Long guestId, GuestDTO guestDTO);
 }
