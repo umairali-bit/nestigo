@@ -52,8 +52,8 @@ public class UserController {
 
     @PostMapping("/guests")
     @Operation(summary = "Add a new guest to my guest list", tags = {"Booking Guests"})
-    public ResponseEntity<GuestDTO> createGuest(@RequestBody GuestDTO guestDTO) {
-        return ResponseEntity.status(HttpStatus.CREATED).build(guestService.addNewGuest(guestDTO));
+    public ResponseEntity<GuestDTO> addNewGuest(@RequestBody GuestDTO guestDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(guestService.addNewGuest(guestDTO));
     }
 
 
