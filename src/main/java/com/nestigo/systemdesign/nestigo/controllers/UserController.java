@@ -7,6 +7,7 @@ import com.nestigo.systemdesign.nestigo.dtos.UserDTO;
 import com.nestigo.systemdesign.nestigo.entities.UserEntity;
 import com.nestigo.systemdesign.nestigo.services.BookingService;
 import com.nestigo.systemdesign.nestigo.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +38,12 @@ public class UserController {
     @GetMapping("/profile")
     public ResponseEntity<UserDTO> getMyProfile() {
         return ResponseEntity.ok(userService.getMyProfile());
+    }
+
+    @GetMapping("/guests")
+    @Operation(summary = "Get all my guests", tags = {"Booking Guests"})
+    public ResponseEntity<List<BookingDTO>> getMyGuests() {
+        return ResponseEntity.ok(guestService.getAllGuests());
     }
 
 }
